@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snake Game</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #111;
+    }
+
+    #game-board {
+      width: 400px;
+      height: 400px;
+      background-color: #222;
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+    }
+
+    .cell {
+      background-color: #111;
+      border: 1px solid #333;
+    }
+
+    .snake {
+      background-color: #fff;
+    }
+
+    .food {
+      background-color: #f00;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-board"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const gameBoard = document.getElementById('game-board');
+      const boardSize = 20;
+      let cells = [];
+
+      // Create the game board cells
+      for (let i = 0; i < boardSize * boardSize; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        gameBoard.appendChild(cell);
+        cells.push(cell);
+      }
+
+      let snake = [2, 1, 0]; // Initial snake position
+      let direction = 1; // Initial direction (1 - right, -1 - left, boardSize - down, -boardSize - up)
+      let food = 6; // Initial food position
+      let interval = 500; // Game update interval (milliseconds)
+      let gameLoop;
+
+      // Add snake and food classes to the cells
+      function render() {
+        cells.forEach((cell) => {
+          cell.classList.remove('snake', 'food');
+        });
+
+        snake.forEach((index) => {
+          cells[index].classList.add('snake');
+        });
+
+        cells[food].classList.add('food');
+      }
+
+      // Move the snake
+      function moveSnake() {
+        const head = snake[0];
+        const tail = snake.pop();
+        cells[tail].classList.remove('snake');
+
+        if (direction === 1) {
+          snake.unshift(head + 1);
+        } else if (direction === -1) {
+          snake.unshift(head - 1);
+        } else if (direction === boardSize) {
+          snake.unshift(head + boardSize);
+        } else if (direction === -boardSize) {
+          snake.unshift(head - boardSize);
+        }
+
+        const newHead = snake[0];
+
+        // Check if the snake hits the boundaries or itself
+        if (
+          newHead < 0 ||
+          newHead >= cells.length ||
+          (direction === 1 && (newHead + 1) % boardSize === 0) ||
+          (direction === -1 && newHead % boardSize === 0) ||
+          cells[newHead].classList.contains('snake')
+        ) {
+          clearInterval(gameLoop);
+          alert('Game over!');
+          resetGame();
+          return;
+        }
+
+        // Check if the snake eats the food
+        if (newHead === food) {
+          cells[food].classList.remove('food');
+          snake.push(tail);
+          generateFood();
+        }
+
+        render();
+      }
+
+      // Generate random food position
+      function generateFood() {
+        food = Math.floor(Math.random() * cells.length);
+
+        if (cells[food].classList.contains('snake')) {
+          generateFood();
+        } else {
+          cells[food].classList.add('food');
+        }
+      }
+
+      //
+     
+function resetGame() {
+snake = [2, 1, 0];
+direction = 1;
+render();
+startGame();
+}
+  // Handle keyboard input
+  function handleKeydown(event) {
+    const key = event.keyCode;
+
+    // ArrowUp
+    if (key === 38 && direction !== boardSize) {
+      direction = -boardSize;
+    }
+    // ArrowDown
+    else if (key === 40 && direction !== -boardSize) {
+      direction = boardSize;
+    }
+    // ArrowLeft
+    else if (key === 37 && direction !== 1) {
+      direction = -1;
+    }
+    // ArrowRight
+    else if (key === 39 && direction !== -1) {
+      direction = 1;
+    }
+  }
+
+  // Start the game
+  function startGame() {
+    gameLoop = setInterval(moveSnake, interval);
+  }
+
+  // Event listener for keydown
+  document.addEventListener('keydown', handleKeydown);
+
+  // Initialize the game
+  render();
+  generateFood();
+  startGame();
+});
+</script>
+</body>
+</html>
